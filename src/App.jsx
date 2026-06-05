@@ -13,6 +13,22 @@ import { syncToSheets } from './lib/sheets.js';
 import { GROUP_ORDER, CATEGORIES, GROUP_BUDGETS, MISSION_CAPITAL } from './constants/categories.js';
 
 const FOOTER_NAV = ['Briefing', 'Categories', 'Mission', 'Settings'];
+const STORAGE_KEY = 'cos_session_v1';
+
+function saveSession(parsed, briefing, actualsThrough, lastUpdated) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ parsed, briefing, actualsThrough, lastUpdated }));
+  } catch {}
+}
+
+function loadSession() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
 
 function readFileAsText(file) {
   return new Promise((resolve, reject) => {
@@ -36,12 +52,12 @@ function formatDate(isoDate) {
 export default function App() {
   const [dark, setDark] = useState(false);
   const [period, setPeriod] = useState('month');
-  const [parsed, setParsed] = useState(null);
-  const [briefing, setBriefing] = useState('');
+  const [parsed, setParsed] = useState(() => loadSession()?.parsed ?? null);
+  const [briefing, setBriefing] = useState(() => loadSession()?.briefing ?? '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [lastUpdated, setLastUpdated] = useState(null);
-  const [actualsThrough, setActualsThrough] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(() => loadSession()?.lastUpdated ?? null);
+  const [actualsThrough, setActualsThrough] = useState(() => loadSession()?.actualsThrough ?? null);
   const [isMobile, setIsMobile] = useState(false);
   const [activeNav, setActiveNav] = useState('Briefing');
 
@@ -66,7 +82,8 @@ export default function App() {
 
       // Actuals-through date from the last transaction in the CSV
       if (result.dateRange?.max) {
-        setActualsThrough(formatDate(result.dateRange.max));
+        const through = formatDate(result.dateRange.max);
+        setActualsThrough(through);
       }
 
       setLastUpdated(
@@ -102,12 +119,19 @@ export default function App() {
         budget: GROUP_ORDER.reduce((s, g) => s + (GROUP_BUDGETS[g] || 0), 0),
       };
 
+      const ts = new Date().toLocaleString('en-US', {
+        month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+      });
+
       try {
         const text = await generateBriefing({ period, snapshot, totals });
         setBriefing(text);
+        saveSession(result, text, result.dateRange?.max ? formatDate(result.dateRange.max) : null, ts);
       } catch (briefErr) {
         setBriefing('');
         setError(briefErr.message);
+        // Still persist parsed data even if briefing generation failed
+        saveSession(result, '', result.dateRange?.max ? formatDate(result.dateRange.max) : null, ts);
       }
     } catch (err) {
       setError(err.message || 'Could not parse that file.');
