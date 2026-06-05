@@ -1,0 +1,355 @@
+/* ============================================================
+   Capital Planning OS — layout + component styles
+   Depends on tokens.css. All themed values come through var(--*),
+   so a single .dark on #cosRoot retints the whole surface.
+   ============================================================ */
+
+.cos-shell {
+  max-width: 1280px;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── HEADER ─────────────────────────────────────────────────── */
+.cos-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--rule);
+  padding: var(--space-5) var(--space-10) 0;
+  transition: background var(--transition), border-color var(--transition);
+}
+.cos-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+.cos-wordmark {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.cos-wordmark-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px; height: 30px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  border-radius: var(--r-sm);
+  transition: background var(--transition), color var(--transition);
+}
+.cos-wordmark-text {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-wordmark);
+  letter-spacing: 0.01em;
+  color: var(--text-primary);
+}
+.cos-header-tools {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.cos-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  padding: 6px 12px;
+  border: 1px solid currentColor;
+  border-radius: var(--r-pill);
+}
+.cos-status-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: currentColor;
+}
+
+.cos-theme-toggle {
+  width: 36px; height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--r-sm);
+  color: var(--text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.cos-theme-toggle:hover { color: var(--accent); border-color: var(--accent); }
+
+.cos-upload-btn {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  padding: 9px 16px;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  border: 1px solid var(--text-primary);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.cos-upload-btn:hover { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.cos-upload-btn--lg { padding: 13px 26px; font-size: var(--fs-body-sm); }
+
+/* Period selector */
+.cos-period-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) 0 0;
+}
+.cos-period-tabs {
+  display: flex;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+}
+.cos-period-tab {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  padding: 10px 4px;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color var(--transition), border-color var(--transition);
+}
+.cos-period-tab:hover:not(:disabled) { color: var(--text-secondary); }
+.cos-period-tab.is-active { color: var(--text-primary); border-bottom-color: var(--accent); }
+.cos-period-tabs.is-disabled { opacity: 0.4; pointer-events: none; }
+.cos-updated { white-space: nowrap; }
+
+/* ── MAIN GRID ──────────────────────────────────────────────── */
+.cos-main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: var(--space-10);
+  padding: var(--space-12) var(--space-10);
+  align-items: start;
+}
+.cos-main-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  min-width: 0;
+}
+.cos-shell.is-mobile .cos-main { grid-template-columns: 1fr; gap: var(--space-8); padding: var(--space-8) var(--space-5); }
+.cos-shell.is-mobile .cos-header { padding: var(--space-4) var(--space-5) 0; }
+
+/* ── CARD ───────────────────────────────────────────────────── */
+.cos-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-lg);
+  padding: var(--space-8);
+  transition: background var(--transition), border-color var(--transition);
+}
+.cos-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-bottom: var(--space-5);
+  margin-bottom: var(--space-6);
+  border-bottom: 1px solid var(--rule);
+}
+
+/* ── BRIEFING ───────────────────────────────────────────────── */
+.cos-briefing-title { font-size: var(--fs-hero); margin: 0 0 var(--space-6); }
+.cos-briefing-body { color: var(--text-secondary); font-size: var(--fs-body); line-height: 1.7; max-width: 64ch; }
+.cos-briefing-body span { vertical-align: baseline; }
+.cos-briefing-status { color: var(--text-muted); font-style: italic; }
+.cos-flag {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  padding: 1px 6px;
+  margin: 0 3px;
+  border: 1px solid currentColor;
+  border-radius: var(--r-xs);
+  transform: translateY(-1px);
+  white-space: nowrap;
+}
+
+/* Empty state */
+.cos-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--space-16) var(--space-6);
+  gap: var(--space-5);
+}
+.cos-empty-mark {
+  width: 64px; height: 64px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1.5px solid var(--accent);
+  border-radius: 50%;
+  color: var(--accent);
+  font-size: 30px;
+  margin-bottom: var(--space-2);
+}
+.cos-empty-title { font-size: var(--fs-h1); max-width: 18ch; margin: 0; }
+.cos-empty-body { max-width: 48ch; color: var(--text-secondary); }
+.cos-empty .cos-upload-btn--lg { margin-top: var(--space-3); }
+
+/* ── CATEGORY SNAPSHOT ──────────────────────────────────────── */
+.cos-snap-grid { display: flex; flex-direction: column; }
+.cos-snap-colhead {
+  display: grid;
+  grid-template-columns: 1fr 96px 96px;
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--rule);
+}
+.cos-snap-num { text-align: right; }
+.cos-snap-group { margin-top: var(--space-2); }
+.cos-snap-grouprow {
+  display: grid;
+  grid-template-columns: 1fr 96px 96px;
+  align-items: baseline;
+  padding: var(--space-4) 0 var(--space-2);
+}
+.cos-snap-groupname {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-h3);
+  letter-spacing: var(--ls-display);
+  color: var(--text-primary);
+}
+.cos-snap-row {
+  display: grid;
+  grid-template-columns: 1fr 96px 96px;
+  align-items: baseline;
+  padding: var(--space-3) 0;
+  padding-left: var(--space-4);
+  border-top: 2px solid var(--ok);
+}
+.cos-snap-catname {
+  font-family: var(--font-body);
+  font-size: var(--fs-body-sm);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.cos-snap-tag {
+  font-size: 9px;
+  padding: 1px 5px;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--r-xs);
+  color: var(--text-muted);
+}
+.cos-snap-num.cos-mono { font-size: var(--fs-body-sm); }
+.cos-snap-budget { color: var(--text-muted); }
+
+/* ── SIDEBAR ────────────────────────────────────────────────── */
+.cos-sidebar {
+  position: sticky;
+  top: 116px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding-left: var(--space-6);
+  border-left: 2px solid var(--accent);
+}
+.cos-shell.is-mobile .cos-sidebar { position: static; border-left: none; padding-left: 0; }
+.cos-sidebar.is-placeholder { opacity: 0.55; }
+
+.cos-side-block { display: flex; flex-direction: column; gap: var(--space-4); }
+.cos-side-block > .cos-eyebrow { margin-bottom: var(--space-1); }
+
+.cos-sum-list { display: flex; flex-direction: column; }
+.cos-sum-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) 0;
+  border-bottom: 1px dotted var(--rule);
+}
+.cos-sum-val { font-size: var(--fs-body-sm); }
+.cos-sum-accent { color: var(--accent); }
+.cos-numeric.cos-sum-accent, .cos-sum-accent { font-weight: 500; }
+
+/* Mission Capital bars */
+.cos-mission-list { display: flex; flex-direction: column; gap: var(--space-5); }
+.cos-mission-item { display: flex; flex-direction: column; gap: var(--space-2); }
+.cos-mission-top { display: flex; align-items: baseline; justify-content: space-between; }
+.cos-mission-label { font-family: var(--font-body); font-weight: 700; font-size: var(--fs-body-sm); color: var(--text-primary); }
+.cos-mission-pct { font-size: var(--fs-body-sm); color: var(--accent); }
+.cos-bar { height: 5px; background: var(--rule); border-radius: var(--r-pill); overflow: hidden; }
+.cos-bar-fill { height: 100%; background: var(--accent); border-radius: var(--r-pill); transition: width var(--transition); }
+.cos-mission-foot { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
+.cos-mission-amt { font-size: 11px; color: var(--text-muted); }
+
+/* Scenario stub */
+.cos-scenario { padding-top: var(--space-2); border-top: 1px solid var(--rule); }
+.cos-scenario-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.cos-phase-chip {
+  padding: 3px 8px;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--r-xs);
+  color: var(--text-muted);
+  font-size: 9px;
+}
+.cos-scenario-body { font-size: var(--fs-body-sm); color: var(--text-muted); }
+.cos-scenario-ghost { display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-2); }
+
+/* Placeholders */
+.cos-ph-bar { display: block; height: 9px; width: 56px; background: var(--rule); border-radius: var(--r-pill); }
+.cos-ph-text { color: var(--text-muted); }
+
+/* ── FOOTER ─────────────────────────────────────────────────── */
+.cos-footer {
+  background: var(--footer-bar);
+  color: var(--text-on-footer);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-10);
+  transition: background var(--transition);
+}
+.cos-footer-nav { display: flex; gap: var(--space-6); }
+.cos-footer-link {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  background: transparent;
+  border: none;
+  color: rgba(242, 244, 247, 0.55);
+  padding: 4px 0;
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+  transition: color var(--transition), border-color var(--transition);
+}
+.cos-footer-link:hover { color: rgba(242, 244, 247, 0.9); }
+.cos-footer-link.is-active { color: var(--accent); border-bottom-color: var(--accent); }
+.cos-footer-mark { color: rgba(242, 244, 247, 0.4); }
+.cos-shell.is-mobile .cos-footer { padding: var(--space-4) var(--space-5); flex-direction: column; gap: var(--space-3); align-items: flex-start; }

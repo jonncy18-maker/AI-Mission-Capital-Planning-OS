@@ -1,0 +1,222 @@
+/* ============================================================
+   Capital Planning OS — Design Tokens
+   "Editorial Finance" — single source of truth for color + type.
+   Light = cool slate-blue accent on cool gray paper.
+   Dark  = gold accent on near-black.
+   The .dark class is toggled on #cosRoot; all themed values
+   are CSS custom properties so the whole tree retints at once.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Lato:ital,wght@0,300;0,400;0,700;1,400&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap');
+
+/* ── THEME TOKENS · LIGHT (default) ─────────────────────────── */
+#cosRoot {
+  /* — Accent — */
+  --accent:          #7EB5D6;   /* cool slate blue                       */
+  --accent-ink:      #0E1520;   /* text that sits on an accent fill      */
+
+  /* — Surfaces — */
+  --bg-primary:      #F2F4F7;   /* app background                        */
+  --bg-secondary:    #ffffff;   /* cards, panels                         */
+  --footer-bar:      #0E1520;   /* footer nav background                 */
+
+  /* — Text — */
+  --text-primary:    #0E1520;
+  --text-secondary:  #4a6070;
+  --text-muted:      #8a9aaa;
+  --text-on-footer:  #F2F4F7;
+
+  /* — Rules / borders — */
+  --rule:            #DDE2EA;
+  --rule-strong:     #c6cedb;
+
+  /* — Traffic lights (status) — */
+  --ok:              #40A060;   /* favorable / under budget              */
+  --warn:            #E8A020;   /* watch / approaching budget            */
+  --alert:           #C03030;   /* over budget                           */
+
+  /* — Tints derived from accent (translucent, retint w/ theme) — */
+  --accent-wash:     rgba(126, 181, 214, 0.12);
+  --accent-line:     rgba(126, 181, 214, 0.55);
+  --ok-wash:         rgba(64, 160, 96, 0.12);
+  --warn-wash:       rgba(232, 160, 32, 0.12);
+  --alert-wash:      rgba(192, 48, 48, 0.10);
+
+  /* — Type families — */
+  --font-display: 'Playfair Display', 'Iowan Old Style', Georgia, serif;
+  --font-body:    'Lato', 'Helvetica Neue', Helvetica, system-ui, sans-serif;
+  --font-mono:    'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  /* — Type scale — */
+  --fs-wordmark:   17px;
+  --fs-hero:       40px;   /* briefing headline                          */
+  --fs-h1:         32px;
+  --fs-h2:         24px;
+  --fs-h3:         19px;
+  --fs-numeric:    34px;   /* large peso figures                         */
+  --fs-body:       15px;
+  --fs-body-sm:    13.5px;
+  --fs-label:      11px;   /* DM Mono uppercase labels                   */
+  --fs-micro:      10px;
+
+  /* — Line height — */
+  --lh-tight:    1.05;
+  --lh-display:  1.12;
+  --lh-body:     1.55;
+
+  /* — Letter spacing — */
+  --ls-display:  -0.015em;  /* tighten Playfair headlines                */
+  --ls-label:     0.16em;   /* open DM Mono labels                       */
+  --ls-label-wide:0.22em;   /* wordmark + eyebrows                       */
+
+  /* — Spacing scale — */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* — Radii (document-feel, barely rounded) — */
+  --r-xs:   2px;
+  --r-sm:   3px;
+  --r-md:   4px;
+  --r-lg:   6px;
+  --r-pill: 999px;
+
+  /* — Motion — */
+  --transition: 0.25s ease;
+
+  /* — Shadow (used very sparingly) — */
+  --shadow-card: 0 1px 2px rgba(14, 21, 32, 0.04), 0 8px 24px rgba(14, 21, 32, 0.05);
+}
+
+/* ── THEME TOKENS · DARK ────────────────────────────────────── */
+#cosRoot.dark {
+  --accent:          #C9A84C;   /* gold                                  */
+  --accent-ink:      #141010;
+
+  --bg-primary:      #141010;
+  --bg-secondary:    #0D0A0A;
+  --footer-bar:      #0D0A0A;
+
+  --text-primary:    #E8DDD0;
+  --text-secondary:  #7a6a58;
+  --text-muted:      #5a4a38;
+  --text-on-footer:  #E8DDD0;
+
+  --rule:            #2a2020;
+  --rule-strong:     #3a2e26;
+
+  --ok:              #3a8a3a;
+  --warn:            #b07820;
+  --alert:           #a02020;
+
+  --accent-wash:     rgba(201, 168, 76, 0.12);
+  --accent-line:     rgba(201, 168, 76, 0.55);
+  --ok-wash:         rgba(58, 138, 58, 0.14);
+  --warn-wash:       rgba(176, 120, 32, 0.14);
+  --alert-wash:      rgba(160, 32, 32, 0.14);
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* ── BASE ELEMENT STYLES ────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+#cosRoot {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background var(--transition), color var(--transition);
+}
+
+/* ── SEMANTIC TYPE UTILITIES ────────────────────────────────── */
+.cos-display {
+  font-family: var(--font-display);
+  font-weight: 500;
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+  color: var(--text-primary);
+}
+.cos-hero {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-hero);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+  color: var(--text-primary);
+  text-wrap: balance;
+}
+.cos-numeric {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--fs-numeric);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--ls-display);
+  color: var(--text-primary);
+  font-variant-numeric: lining-nums tabular-nums;
+}
+.cos-body {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--text-secondary);
+  text-wrap: pretty;
+}
+/* The signature gesture — italic Playfair emphasis inside a Lato sentence */
+.cos-italic {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  color: inherit;
+}
+/* DM Mono uppercase label — eyebrows, data labels, status microcopy */
+.cos-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.cos-mono {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--text-primary);
+}
+
+/* — Gold/accent eyebrow dash (the 24px accent rule before a label) — */
+.cos-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  letter-spacing: var(--ls-label-wide);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.cos-eyebrow::before {
+  content: "";
+  width: 24px;
+  height: 1.5px;
+  background: var(--accent);
+  flex: none;
+}
+
+/* — Traffic-light helpers — */
+.is-ok    { color: var(--ok); }
+.is-warn  { color: var(--warn); }
+.is-alert { color: var(--alert); }
