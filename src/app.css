@@ -219,21 +219,53 @@
 .cos-empty .cos-upload-btn--lg { margin-top: var(--space-3); }
 
 /* ── CATEGORY SNAPSHOT ──────────────────────────────────────── */
-.cos-snap-grid { display: flex; flex-direction: column; }
-.cos-snap-colhead {
-  display: grid;
-  grid-template-columns: 1fr 96px 96px;
-  padding-bottom: var(--space-3);
-  border-bottom: 1px solid var(--rule);
+.cos-snapshot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
 }
-.cos-snap-num { text-align: right; }
-.cos-snap-group { margin-top: var(--space-2); }
+.cos-snapshot-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+.cos-snap-groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.cos-snap-group-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  transition: background var(--transition), border-color var(--transition);
+}
 .cos-snap-grouprow {
   display: grid;
-  grid-template-columns: 1fr 96px 96px;
-  align-items: baseline;
-  padding: var(--space-4) 0 var(--space-2);
+  grid-template-columns: 20px 1fr 96px 96px;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  width: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--transition);
 }
+.cos-snap-grouprow:hover { background: var(--bg-primary); }
+.cos-snap-chevron {
+  display: inline-block;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1;
+  transform: rotate(0deg);
+  transition: transform var(--transition);
+  user-select: none;
+}
+.cos-snap-chevron.is-open { transform: rotate(90deg); }
 .cos-snap-groupname {
   font-family: var(--font-display);
   font-weight: 600;
@@ -241,12 +273,22 @@
   letter-spacing: var(--ls-display);
   color: var(--text-primary);
 }
+.cos-snap-cats {
+  border-top: 1px solid var(--rule);
+  padding: 0 var(--space-5) var(--space-3);
+}
+.cos-snap-colhead {
+  display: grid;
+  grid-template-columns: 1fr 96px 96px;
+  padding: var(--space-3) 0 var(--space-2);
+  border-bottom: 1px solid var(--rule);
+}
+.cos-snap-num { text-align: right; }
 .cos-snap-row {
   display: grid;
   grid-template-columns: 1fr 96px 96px;
   align-items: baseline;
   padding: var(--space-3) 0;
-  padding-left: var(--space-4);
   border-top: 2px solid var(--ok);
 }
 .cos-snap-catname {
@@ -263,6 +305,7 @@
   border: 1px solid var(--rule-strong);
   border-radius: var(--r-xs);
   color: var(--text-muted);
+  white-space: nowrap;
 }
 .cos-snap-num.cos-mono { font-size: var(--fs-body-sm); }
 .cos-snap-budget { color: var(--text-muted); }

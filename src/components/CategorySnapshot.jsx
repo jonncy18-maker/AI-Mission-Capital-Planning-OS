@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { GROUP_ORDER, CATEGORIES, GROUP_BUDGETS } from '../constants/categories.js';
 
 const fmt = (n) => '$' + Math.round(n).toLocaleString('en-US');
@@ -12,60 +13,73 @@ function statusOf(actual, budget) {
 
 const BORDER = { over: 'var(--alert)', watch: 'var(--warn)', ok: 'var(--ok)' };
 const STATUS_CLS = { over: 'is-alert', watch: 'is-warn', ok: 'is-ok' };
+const TYPE_LABEL = { fixed: 'Fixed', flexible: 'Flexible', nonMonthly: 'Non-Monthly' };
 
 export default function CategorySnapshot({ snapshot }) {
+  const [collapsed, setCollapsed] = useState({});
+
+  const toggle = (group) =>
+    setCollapsed((prev) => ({ ...prev, [group]: !prev[group] }));
+
   return (
-    <section className="cos-card cos-snapshot">
-      <div className="cos-card-head">
+    <section className="cos-snapshot">
+      <div className="cos-snapshot-header">
         <span className="cos-eyebrow">Category Snapshot</span>
         <span className="cos-label">Actual / Budget</span>
       </div>
 
-      <div className="cos-snap-grid" role="table">
-        <div className="cos-snap-colhead cos-label" role="row">
-          <span role="columnheader">Category</span>
-          <span role="columnheader" className="cos-snap-num">Actual</span>
-          <span role="columnheader" className="cos-snap-num">Budget</span>
-        </div>
-
+      <div className="cos-snap-groups">
         {GROUP_ORDER.map((group) => {
           const cats = CATEGORIES[group] || [];
           const groupActual = snapshot?.[group]?.total || 0;
           const groupBudget = GROUP_BUDGETS[group] || 0;
           const gStatus = statusOf(groupActual, groupBudget);
+          const isCollapsed = collapsed[group] ?? false;
 
           return (
-            <div className="cos-snap-group" key={group}>
-              <div className="cos-snap-grouprow" role="row">
+            <div className="cos-snap-group-card" key={group}>
+              <button
+                className="cos-snap-grouprow"
+                onClick={() => toggle(group)}
+                aria-expanded={!isCollapsed}
+              >
+                <span className={`cos-snap-chevron${isCollapsed ? '' : ' is-open'}`}>›</span>
                 <span className="cos-snap-groupname">{group}</span>
                 <span className={`cos-snap-num cos-mono ${STATUS_CLS[gStatus]}`}>
                   {fmt(groupActual)}
                 </span>
                 <span className="cos-snap-num cos-mono cos-snap-budget">{fmt(groupBudget)}</span>
-              </div>
+              </button>
 
-              {cats.map((c) => {
-                const actual = snapshot?.[group]?.categories?.[c.name] || 0;
-                const budget = c.type === 'nonMonthly' ? c.annual : (c.monthly || 0);
-                const st = statusOf(actual, budget);
-                return (
-                  <div
-                    className="cos-snap-row"
-                    role="row"
-                    key={c.name}
-                    style={{ borderTopColor: BORDER[st] }}
-                  >
-                    <span className="cos-snap-catname">
-                      {c.name}
-                      {c.type === 'nonMonthly' && (
-                        <span className="cos-snap-tag cos-label">Annual</span>
-                      )}
-                    </span>
-                    <span className="cos-snap-num cos-mono">{fmt(actual)}</span>
-                    <span className="cos-snap-num cos-mono cos-snap-budget">{fmt(budget)}</span>
+              {!isCollapsed && (
+                <div className="cos-snap-cats">
+                  <div className="cos-snap-colhead cos-label">
+                    <span>Category</span>
+                    <span className="cos-snap-num">Actual</span>
+                    <span className="cos-snap-num">Budget</span>
                   </div>
-                );
-              })}
+                  {cats.map((c) => {
+                    const actual = snapshot?.[group]?.categories?.[c.name] || 0;
+                    const budget = c.type === 'nonMonthly' ? c.annual : (c.monthly || 0);
+                    const st = statusOf(actual, budget);
+                    return (
+                      <div
+                        className="cos-snap-row"
+                        role="row"
+                        key={c.name}
+                        style={{ borderTopColor: BORDER[st] }}
+                      >
+                        <span className="cos-snap-catname">
+                          {c.name}
+                          <span className="cos-snap-tag cos-label">{TYPE_LABEL[c.type]}</span>
+                        </span>
+                        <span className="cos-snap-num cos-mono">{fmt(actual)}</span>
+                        <span className="cos-snap-num cos-mono cos-snap-budget">{fmt(budget)}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           );
         })}
