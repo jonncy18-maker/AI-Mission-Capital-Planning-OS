@@ -7,11 +7,31 @@ import BriefingCard from './components/BriefingCard.jsx';
 import CategorySnapshot from './components/CategorySnapshot.jsx';
 import Sidebar from './components/Sidebar.jsx';
 
-import { parseMonarchFile } from './lib/csvParser.js';
+import { parseMonarchCsv } from './lib/csvParser.js';
 import { generateBriefing } from './lib/anthropic.js';
+import { syncToSheets } from './lib/sheets.js';
 import { GROUP_ORDER, CATEGORIES, GROUP_BUDGETS, MISSION_CAPITAL } from './constants/categories.js';
 
 const FOOTER_NAV = ['Briefing', 'Categories', 'Mission', 'Settings'];
+
+function readFileAsText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Could not read file.'));
+    reader.onload = () => resolve(String(reader.result));
+    reader.readAsText(file);
+  });
+}
+
+function formatDate(isoDate) {
+  try {
+    return new Date(isoDate + 'T00:00:00').toLocaleDateString('en-US', {
+      month: 'short', day: 'numeric', year: 'numeric',
+    });
+  } catch {
+    return isoDate;
+  }
+}
 
 export default function App() {
   const [dark, setDark] = useState(false);
@@ -21,6 +41,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [actualsThrough, setActualsThrough] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
   const [activeNav, setActiveNav] = useState('Briefing');
 
@@ -39,13 +60,26 @@ export default function App() {
     setLoading(true);
     setBriefing('');
     try {
-      const result = await parseMonarchFile(file);
+      const csvText = await readFileAsText(file);
+      const result = parseMonarchCsv(csvText);
       setParsed(result);
+
+      // Actuals-through date from the last transaction in the CSV
+      if (result.dateRange?.max) {
+        setActualsThrough(formatDate(result.dateRange.max));
+      }
+
       setLastUpdated(
         new Date().toLocaleString('en-US', {
           month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
         })
       );
+
+      // Sync raw CSV rows to Google Sheets (non-blocking, silent fail)
+      const webhookUrl = import.meta.env.VITE_SHEETS_WEBHOOK_URL;
+      if (webhookUrl) {
+        syncToSheets(csvText, webhookUrl).catch(() => {});
+      }
 
       // Build the snapshot payload the briefing call needs.
       const snapshot = GROUP_ORDER.map((g) => {
@@ -129,6 +163,7 @@ export default function App() {
           onToggleTheme={() => setDark((d) => !d)}
           onUpload={handleUpload}
           lastUpdated={lastUpdated}
+          actualsThrough={actualsThrough}
         />
 
         <main className="cos-main">

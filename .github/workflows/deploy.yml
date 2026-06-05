@@ -29,6 +29,10 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          VITE_ANTHROPIC_KEY: ${{ secrets.VITE_ANTHROPIC_KEY }}
+          VITE_ANTHROPIC_MODEL: ${{ secrets.VITE_ANTHROPIC_MODEL }}
+          VITE_SHEETS_WEBHOOK_URL: ${{ secrets.VITE_SHEETS_WEBHOOK_URL }}
 
       - uses: actions/upload-pages-artifact@v3
         with:

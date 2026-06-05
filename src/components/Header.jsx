@@ -24,6 +24,7 @@ export default function Header({
   onToggleTheme,
   onUpload,
   lastUpdated,
+  actualsThrough,
 }) {
   const fileRef = useRef(null);
   const s = STATUS[status] || STATUS.ontrack;
@@ -90,7 +91,11 @@ export default function Header({
           ))}
         </nav>
         <span className="cos-updated cos-label">
-          {lastUpdated ? `Updated ${lastUpdated}` : 'No data loaded'}
+          {actualsThrough
+            ? `Actuals through ${actualsThrough}`
+            : lastUpdated
+            ? `Updated ${lastUpdated}`
+            : 'No data loaded'}
         </span>
       </div>
     </header>

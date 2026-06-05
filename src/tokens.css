@@ -105,17 +105,17 @@
   --bg-secondary:    #0D0A0A;
   --footer-bar:      #0D0A0A;
 
-  --text-primary:    #E8DDD0;
-  --text-secondary:  #7a6a58;
-  --text-muted:      #5a4a38;
-  --text-on-footer:  #E8DDD0;
+  --text-primary:    #EDE3D8;
+  --text-secondary:  #C0AE9C;
+  --text-muted:      #9A8878;
+  --text-on-footer:  #EDE3D8;
 
-  --rule:            #2a2020;
-  --rule-strong:     #3a2e26;
+  --rule:            #302424;
+  --rule-strong:     #443630;
 
-  --ok:              #3a8a3a;
-  --warn:            #b07820;
-  --alert:           #a02020;
+  --ok:              #5CB85C;
+  --warn:            #D4962A;
+  --alert:           #D94040;
 
   --accent-wash:     rgba(201, 168, 76, 0.12);
   --accent-line:     rgba(201, 168, 76, 0.55);
