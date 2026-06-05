@@ -16,16 +16,27 @@ const STATUS_CLS = { over: 'is-alert', watch: 'is-warn', ok: 'is-ok' };
 const TYPE_LABEL = { fixed: 'Fixed', flexible: 'Flexible', nonMonthly: 'Non-Monthly' };
 
 export default function CategorySnapshot({ snapshot }) {
-  const [collapsed, setCollapsed] = useState({});
+  const [collapsed, setCollapsed] = useState(
+    () => Object.fromEntries(GROUP_ORDER.map((g) => [g, true]))
+  );
 
   const toggle = (group) =>
     setCollapsed((prev) => ({ ...prev, [group]: !prev[group] }));
+
+  const allCollapsed = GROUP_ORDER.every((g) => collapsed[g]);
+  const toggleAll = () =>
+    setCollapsed(Object.fromEntries(GROUP_ORDER.map((g) => [g, !allCollapsed])));
 
   return (
     <section className="cos-snapshot">
       <div className="cos-snapshot-header">
         <span className="cos-eyebrow">Category Snapshot</span>
-        <span className="cos-label">Actual / Budget</span>
+        <div className="cos-snap-header-right">
+          <button className="cos-snap-toggle-all cos-label" onClick={toggleAll}>
+            {allCollapsed ? 'Expand All' : 'Collapse All'}
+          </button>
+          <span className="cos-label">Actual / Budget</span>
+        </div>
       </div>
 
       <div className="cos-snap-groups">
