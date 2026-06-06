@@ -6,9 +6,12 @@ import Header from './components/Header.jsx';
 import BriefingCard from './components/BriefingCard.jsx';
 import CategorySnapshot from './components/CategorySnapshot.jsx';
 import Sidebar from './components/Sidebar.jsx';
+import TrendSection from './components/TrendSection.jsx';
 
 import { parseMonarchCsv } from './lib/csvParser.js';
 import { filterByPeriod, aggregateTransactions } from './lib/periodFilter.js';
+import { loadOverrides, saveOverrides, resetOverrides } from './lib/budgetOverrides.js';
+import { loadHistory, upsertMonth } from './lib/history.js';
 import { generateBriefing } from './lib/anthropic.js';
 import { syncToSheets } from './lib/sheets.js';
 import { GROUP_ORDER, CATEGORIES, GROUP_BUDGETS, MISSION_CAPITAL } from './constants/categories.js';
@@ -20,6 +23,8 @@ const FOOTER_SECTIONS = {
   Settings:   'cos-header',
 };
 const STORAGE_KEY = 'cos_session_v1';
+
+const UNFILTERED_PERIODS = new Set(['custom', 'forecast']);
 
 function saveSession(parsed, briefing, actualsThrough, lastUpdated) {
   try {
@@ -55,9 +60,6 @@ function formatDate(isoDate) {
   }
 }
 
-// Periods that are not yet filterable — kept disabled until Phase 5.
-const UNFILTERED_PERIODS = new Set(['custom', 'forecast']);
-
 export default function App() {
   const [dark, setDark] = useState(false);
   const [period, setPeriod] = useState('month');
@@ -69,8 +71,9 @@ export default function App() {
   const [actualsThrough, setActualsThrough] = useState(() => loadSession()?.actualsThrough ?? null);
   const [isMobile, setIsMobile] = useState(false);
   const [activeNav, setActiveNav] = useState('Briefing');
+  const [budgetOverrides, setBudgetOverrides] = useState(() => loadOverrides());
+  const [history, setHistory] = useState(() => loadHistory());
 
-  // Lifted file input ref — shared between Header button and BriefingCard empty state.
   const fileInputRef = useRef(null);
   const triggerUpload = () => fileInputRef.current?.click();
 
@@ -93,9 +96,12 @@ export default function App() {
       const result = parseMonarchCsv(csvText);
       setParsed(result);
 
+      // Persist this month to history (keyed by YYYY-MM of dateRange.max).
+      const updatedHistory = upsertMonth(result);
+      setHistory(updatedHistory);
+
       if (result.dateRange?.max) {
-        const through = formatDate(result.dateRange.max);
-        setActualsThrough(through);
+        setActualsThrough(formatDate(result.dateRange.max));
       }
 
       const ts = new Date().toLocaleString('en-US', {
@@ -104,9 +110,7 @@ export default function App() {
       setLastUpdated(ts);
 
       const webhookUrl = import.meta.env.VITE_SHEETS_WEBHOOK_URL;
-      if (webhookUrl) {
-        syncToSheets(csvText, webhookUrl).catch(() => {});
-      }
+      if (webhookUrl) syncToSheets(csvText, webhookUrl).catch(() => {});
 
       const snapshot = GROUP_ORDER.map((g) => {
         const groupData = result.groups[g] || { total: 0, categories: {} };
@@ -146,16 +150,16 @@ export default function App() {
   }
 
   // Filtered view: re-aggregate transactions for the active period.
-  // Falls back to full parsed data if transactions aren't available (legacy session)
-  // or if the period is a Phase 5 placeholder.
   const filteredData = useMemo(() => {
     if (!parsed) return null;
-    if (!parsed.transactions || UNFILTERED_PERIODS.has(period)) return parsed;
-
+    if (!parsed.transactions || UNFILTERED_PERIODS.has(period)) {
+      return { ...parsed, filteredTransactions: parsed.transactions ?? [] };
+    }
     const txs = filterByPeriod(parsed.transactions, period, parsed.dateRange?.max);
     return {
       ...aggregateTransactions(txs),
-      transactions: parsed.transactions,
+      transactions: parsed.transactions,        // full set — kept for session storage
+      filteredTransactions: txs,                // period slice — used by drill-down
       excluded: parsed.excluded,
     };
   }, [parsed, period]);
@@ -193,6 +197,17 @@ export default function App() {
     return 'ontrack';
   }, [summary]);
 
+  function handleBudgetChange(group, catName, value) {
+    const next = { ...budgetOverrides, [`${group}/${catName}`]: value };
+    setBudgetOverrides(next);
+    saveOverrides(next);
+  }
+
+  function handleBudgetReset() {
+    setBudgetOverrides({});
+    resetOverrides();
+  }
+
   function handleFooterNav(item) {
     setActiveNav(item);
     const id = FOOTER_SECTIONS[item];
@@ -201,7 +216,6 @@ export default function App() {
 
   return (
     <div id="cosRoot" className={dark ? 'dark' : ''}>
-      {/* Lifted file input — shared trigger for Header and BriefingCard */}
       <input
         ref={fileInputRef}
         type="file"
@@ -237,7 +251,17 @@ export default function App() {
               period={period}
               onUpload={triggerUpload}
             />
-            {hasData && <CategorySnapshot snapshot={filteredData.groups} />}
+            {hasData && (
+              <CategorySnapshot
+                snapshot={filteredData.groups}
+                transactions={filteredData.filteredTransactions}
+                budgetOverrides={budgetOverrides}
+                onBudgetChange={handleBudgetChange}
+                onBudgetReset={handleBudgetReset}
+                dateRange={filteredData.dateRange}
+              />
+            )}
+            {hasData && <TrendSection history={history} />}
           </div>
 
           <Sidebar

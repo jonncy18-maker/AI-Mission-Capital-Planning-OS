@@ -299,14 +299,15 @@
 }
 .cos-snap-colhead {
   display: grid;
-  grid-template-columns: 1fr 96px 96px;
+  grid-template-columns: 20px 1fr 96px 96px;
   padding: var(--space-3) 0 var(--space-2);
   border-bottom: 1px solid var(--rule);
 }
+.cos-snap-colhead > span:first-child { /* empty spacer for drill-down column */ }
 .cos-snap-num { text-align: right; }
 .cos-snap-row {
   display: grid;
-  grid-template-columns: 1fr 96px 96px;
+  grid-template-columns: 20px 1fr 96px 96px;
   align-items: baseline;
   padding: var(--space-3) 0;
   border-top: 2px solid var(--ok);
@@ -389,6 +390,174 @@
 /* Placeholders */
 .cos-ph-bar { display: block; height: 9px; width: 56px; background: var(--rule); border-radius: var(--r-pill); }
 .cos-ph-text { color: var(--text-muted); }
+
+/* ── CATEGORY SNAPSHOT — Phase 4 additions ─────────────────── */
+
+/* Drill-down toggle button on category rows */
+.cos-snap-drill-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px; height: 18px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: var(--r-xs);
+  transition: color var(--transition), transform var(--transition);
+  transform: rotate(0deg);
+}
+.cos-snap-drill-btn.is-open { transform: rotate(90deg); color: var(--accent); }
+.cos-snap-drill-btn.is-empty { opacity: 0; pointer-events: none; }
+.cos-snap-drill-btn:hover:not(.is-empty) { color: var(--accent); }
+
+/* Transaction drill-down panel */
+.cos-drill-panel {
+  border-top: 1px solid var(--rule);
+  background: var(--bg-primary);
+  padding: var(--space-2) var(--space-5) var(--space-3) 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.cos-drill-row {
+  display: grid;
+  grid-template-columns: 1fr 72px 88px;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px dotted var(--rule);
+  font-size: var(--fs-label);
+}
+.cos-drill-row:last-child { border-bottom: none; }
+.cos-drill-merchant { color: var(--text-secondary); font-size: var(--fs-body-sm); }
+.cos-drill-date { color: var(--text-muted); white-space: nowrap; }
+.cos-drill-amt { text-align: right; color: var(--text-secondary); font-size: var(--fs-body-sm); }
+
+/* Budget cell — click-to-edit */
+.cos-snap-budget-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+  cursor: pointer;
+  border-radius: var(--r-xs);
+  padding: 2px 4px;
+  transition: background var(--transition);
+}
+.cos-snap-budget-cell:hover { background: var(--bg-primary); }
+.cos-snap-budget.is-overridden { color: var(--accent); }
+
+/* Inline budget editor input */
+.cos-budget-input {
+  width: 72px;
+  background: var(--bg-primary);
+  border: 1px solid var(--accent);
+  border-radius: var(--r-xs);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  padding: 2px 4px;
+  text-align: right;
+  outline: none;
+}
+
+/* Non-monthly remaining label */
+.cos-snap-remaining {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  line-height: 1;
+}
+.cos-snap-remaining.is-alert { color: var(--alert); }
+
+/* Reset-to-FY26 button */
+.cos-snap-reset {
+  background: transparent;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--r-xs);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  padding: 2px 8px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.cos-snap-reset:hover { color: var(--alert); border-color: var(--alert); }
+
+/* ── TREND SECTION ──────────────────────────────────────────── */
+.cos-trend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  margin-top: var(--space-2);
+}
+.cos-trend-scroll {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--rule-strong) transparent;
+}
+.cos-trend-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-body-sm);
+}
+.cos-trend-group-th {
+  text-align: left;
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  white-space: nowrap;
+  min-width: 140px;
+  border-bottom: 1px solid var(--rule);
+}
+.cos-trend-month-th {
+  text-align: right;
+  padding: var(--space-2) var(--space-3);
+  white-space: nowrap;
+  min-width: 80px;
+  border-bottom: 1px solid var(--rule);
+}
+.cos-trend-row { border-bottom: 1px dotted var(--rule); }
+.cos-trend-row:last-child { border-bottom: none; }
+.cos-trend-group-td {
+  font-family: var(--font-body);
+  font-size: var(--fs-body-sm);
+  color: var(--text-secondary);
+  padding: var(--space-3) var(--space-3) var(--space-3) 0;
+  white-space: nowrap;
+}
+.cos-trend-cell {
+  padding: var(--space-2) var(--space-3);
+  text-align: right;
+  vertical-align: middle;
+}
+.cos-trend-bar {
+  height: 4px;
+  background: var(--rule);
+  border-radius: var(--r-pill);
+  overflow: hidden;
+  margin-bottom: var(--space-1);
+}
+.cos-trend-fill {
+  height: 100%;
+  border-radius: var(--r-pill);
+  transition: width var(--transition);
+}
+.cos-trend-fill.is-ok    { background: var(--ok); }
+.cos-trend-fill.is-warn  { background: var(--warn); }
+.cos-trend-fill.is-alert { background: var(--alert); }
+.cos-trend-amt {
+  font-size: 11px;
+  display: block;
+}
+.cos-trend-amt.is-ok    { color: var(--text-muted); }
+.cos-trend-amt.is-warn  { color: var(--warn); }
+.cos-trend-amt.is-alert { color: var(--alert); }
 
 /* ── FOOTER ─────────────────────────────────────────────────── */
 .cos-footer {
