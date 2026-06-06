@@ -12,8 +12,8 @@
 /* ── THEME TOKENS · LIGHT (default) ─────────────────────────── */
 #cosRoot {
   /* — Accent — */
-  --accent:          #7EB5D6;   /* cool slate blue                       */
-  --accent-ink:      #0E1520;   /* text that sits on an accent fill      */
+  --accent:          #3A7BD5;   /* deep sky blue                         */
+  --accent-ink:      #ffffff;   /* text that sits on an accent fill      */
 
   /* — Surfaces — */
   --bg-primary:      #F2F4F7;   /* app background                        */
@@ -36,8 +36,8 @@
   --alert:           #C03030;   /* over budget                           */
 
   /* — Tints derived from accent (translucent, retint w/ theme) — */
-  --accent-wash:     rgba(126, 181, 214, 0.12);
-  --accent-line:     rgba(126, 181, 214, 0.55);
+  --accent-wash:     rgba(58, 123, 213, 0.10);
+  --accent-line:     rgba(58, 123, 213, 0.45);
   --ok-wash:         rgba(64, 160, 96, 0.12);
   --warn-wash:       rgba(232, 160, 32, 0.12);
   --alert-wash:      rgba(192, 48, 48, 0.10);
@@ -93,7 +93,7 @@
   --transition: 0.25s ease;
 
   /* — Shadow (used very sparingly) — */
-  --shadow-card: 0 1px 2px rgba(14, 21, 32, 0.04), 0 8px 24px rgba(14, 21, 32, 0.05);
+  --shadow-card: 0 1px 2px rgba(14, 21, 32, 0.07), 0 8px 24px rgba(14, 21, 32, 0.09);
 }
 
 /* ── THEME TOKENS · DARK ────────────────────────────────────── */

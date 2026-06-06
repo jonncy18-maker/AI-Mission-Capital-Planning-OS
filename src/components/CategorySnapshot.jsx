@@ -42,6 +42,7 @@ export default function CategorySnapshot({
   onBudgetChange,
   onBudgetReset,
   dateRange,
+  mode,
 }) {
   const [collapsed, setCollapsed] = useState(
     () => Object.fromEntries(GROUP_ORDER.map((g) => [g, true])),
@@ -58,9 +59,11 @@ export default function CategorySnapshot({
 
   const hasOverrides = Object.keys(budgetOverrides).length > 0;
 
-  // Proration multiplier for fixed/flexible budgets (nonMonthly always uses annual).
-  const multiplier = monthsInRange(dateRange);
-  const isMultiMonth = multiplier > 1.4; // more than ~6 weeks → show prorated label
+  const isForecast = mode === 'forecast';
+  // For forecast mode, compare projected values against full annual budget (multiplier=12).
+  // Otherwise prorate by months in the displayed date range.
+  const multiplier = isForecast ? 12 : monthsInRange(dateRange);
+  const isMultiMonth = !isForecast && multiplier > 1.4;
 
   function startEdit(e, key, currentVal) {
     e.stopPropagation();
@@ -87,7 +90,10 @@ export default function CategorySnapshot({
   return (
     <section id="section-categories" className="cos-snapshot">
       <div className="cos-snapshot-header">
-        <span className="cos-eyebrow">Category Snapshot</span>
+        <span className="cos-eyebrow">
+          Category Snapshot
+          {isForecast && <span className="cos-forecast-chip cos-label">EOY Forecast</span>}
+        </span>
         <div className="cos-snap-header-right">
           {hasOverrides && (
             <button className="cos-snap-reset cos-label" onClick={onBudgetReset}>
@@ -98,7 +104,7 @@ export default function CategorySnapshot({
             {allCollapsed ? 'Expand All' : 'Collapse All'}
           </button>
           <span className="cos-label">
-            Actual&nbsp;/&nbsp;{isMultiMonth ? `Budget (${Math.round(multiplier)}mo)` : 'Budget'}
+            {isForecast ? 'Projected EOY' : 'Actual'}&nbsp;/&nbsp;{isMultiMonth ? `Budget (${Math.round(multiplier)}mo)` : 'Annual Budget'}
           </span>
         </div>
       </div>
@@ -131,9 +137,9 @@ export default function CategorySnapshot({
                   <div className="cos-snap-colhead cos-label">
                     <span />
                     <span>Category</span>
-                    <span className="cos-snap-num">Actual</span>
+                    <span className="cos-snap-num">{isForecast ? 'Projected' : 'Actual'}</span>
                     <span className="cos-snap-num">
-                      {isMultiMonth ? `Budget (${Math.round(multiplier)}mo)` : 'Budget'}
+                      {isMultiMonth ? `Budget (${Math.round(multiplier)}mo)` : 'Annual Budget'}
                     </span>
                   </div>
 

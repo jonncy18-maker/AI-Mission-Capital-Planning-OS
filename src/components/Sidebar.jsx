@@ -1,5 +1,5 @@
 import { MISSION_CAPITAL } from '../constants/categories.js';
-import ScenarioStub from './ScenarioStub.jsx';
+import ScenarioPlanner from './ScenarioPlanner.jsx';
 
 const fmt = (n) => '$' + Math.round(n).toLocaleString('en-US');
 
@@ -31,7 +31,15 @@ function MissionBar({ item, spent }) {
   );
 }
 
-export default function Sidebar({ hasData, summary, missionSpent }) {
+export default function Sidebar({
+  hasData,
+  summary,
+  missionSpent,
+  scenarioAdjustments,
+  onScenarioAdd,
+  onScenarioRemove,
+  onScenarioClear,
+}) {
   return (
     <aside id="section-mission" className={`cos-sidebar ${hasData ? '' : 'is-placeholder'}`}>
       <section className="cos-side-block">
@@ -79,7 +87,13 @@ export default function Sidebar({ hasData, summary, missionSpent }) {
         </div>
       </section>
 
-      <ScenarioStub />
+      <ScenarioPlanner
+        hasData={hasData}
+        adjustments={scenarioAdjustments ?? {}}
+        onAdd={onScenarioAdd}
+        onRemove={onScenarioRemove}
+        onClear={onScenarioClear}
+      />
     </aside>
   );
 }

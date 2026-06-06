@@ -98,14 +98,14 @@
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
   padding: 9px 16px;
-  background: var(--text-primary);
-  color: var(--bg-primary);
-  border: 1px solid var(--text-primary);
+  background: var(--accent);
+  color: var(--accent-ink);
+  border: 1px solid var(--accent);
   border-radius: var(--r-sm);
   cursor: pointer;
   transition: all var(--transition);
 }
-.cos-upload-btn:hover { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.cos-upload-btn:hover { opacity: 0.88; }
 .cos-upload-btn--lg { padding: 13px 26px; font-size: var(--fs-body-sm); }
 
 /* Period selector */
@@ -166,6 +166,7 @@
   border: 1px solid var(--rule);
   border-radius: var(--r-lg);
   padding: var(--space-8);
+  box-shadow: var(--shadow-card);
   transition: background var(--transition), border-color var(--transition);
 }
 .cos-card-head {
@@ -343,7 +344,9 @@
   flex-direction: column;
   gap: var(--space-6);
   padding-left: var(--space-6);
-  border-left: 2px solid var(--accent);
+  border-left: 3px solid var(--accent);
+  background: var(--accent-wash);
+  border-radius: 0 var(--r-lg) var(--r-lg) 0;
 }
 .cos-shell.is-mobile .cos-sidebar { position: static; border-left: none; padding-left: 0; }
 .cos-sidebar.is-placeholder { opacity: 0.55; }
@@ -589,3 +592,166 @@
 .cos-footer-link.is-active { color: var(--accent); border-bottom-color: var(--accent); }
 .cos-footer-mark { color: rgba(242, 244, 247, 0.4); }
 .cos-shell.is-mobile .cos-footer { padding: var(--space-4) var(--space-5); flex-direction: column; gap: var(--space-3); align-items: flex-start; }
+
+/* ── PHASE 5 — Planning tools ──────────────────────────────── */
+
+/* Custom date range row */
+.cos-custom-range-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) 0 var(--space-3);
+  border-top: 1px solid var(--rule);
+}
+.cos-date-input {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--r-sm);
+  padding: 5px 10px;
+  height: 30px;
+  cursor: pointer;
+  transition: border-color var(--transition);
+  color-scheme: light dark;
+}
+.cos-date-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Scenario planner */
+.cos-scenario-clear {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+  font-size: var(--fs-label);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  transition: color var(--transition);
+}
+.cos-scenario-clear:hover { color: var(--alert); }
+
+.cos-scenario-add {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.cos-scenario-select {
+  font-family: var(--font-body);
+  font-size: var(--fs-body-sm);
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--r-sm);
+  padding: 6px 8px;
+  width: 100%;
+  cursor: pointer;
+  transition: border-color var(--transition);
+}
+.cos-scenario-select:focus { outline: none; border-color: var(--accent); }
+
+.cos-scenario-input-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-2);
+}
+.cos-scenario-delta {
+  font-family: var(--font-mono);
+  font-size: var(--fs-body-sm);
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--r-sm);
+  padding: 6px 8px;
+  width: 100%;
+  transition: border-color var(--transition);
+}
+.cos-scenario-delta:focus { outline: none; border-color: var(--accent); }
+.cos-scenario-add-btn {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  background: var(--accent);
+  color: var(--accent-ink);
+  border: none;
+  border-radius: var(--r-sm);
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: opacity var(--transition);
+  white-space: nowrap;
+}
+.cos-scenario-add-btn:disabled { opacity: 0.4; cursor: default; }
+.cos-scenario-add-btn:not(:disabled):hover { opacity: 0.85; }
+
+.cos-scenario-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  margin-top: var(--space-1);
+}
+.cos-scenario-item {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--rule);
+  font-size: var(--fs-body-sm);
+  background: var(--bg-secondary);
+}
+.cos-scenario-item-label {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.cos-scenario-group { font-size: 9px; }
+.cos-scenario-cat { color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cos-scenario-amt { font-size: var(--fs-body-sm); white-space: nowrap; }
+.cos-scenario-remove {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 2px;
+  transition: color var(--transition);
+  flex: none;
+}
+.cos-scenario-remove:hover { color: var(--alert); }
+
+.cos-scenario-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-primary);
+  border-top: 1px solid var(--rule-strong);
+}
+
+/* EOY Forecast chip */
+.cos-forecast-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background: var(--accent-wash);
+  color: var(--accent);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--r-xs);
+  font-size: 9px;
+  letter-spacing: var(--ls-label);
+  margin-left: var(--space-3);
+  vertical-align: middle;
+}

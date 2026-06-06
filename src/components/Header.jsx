@@ -5,8 +5,8 @@ const PERIODS = [
   { key: 'rolling30', label: 'Rolling 30' },
   { key: 'ytd',       label: 'YTD' },
   { key: 'lastYear',  label: 'Last Year' },
-  { key: 'custom',    label: 'Custom',       phase5: true },
-  { key: 'forecast',  label: 'Forecast · EOY', phase5: true },
+  { key: 'custom',    label: 'Custom' },
+  { key: 'forecast',  label: 'Forecast · EOY' },
 ];
 
 const STATUS = {
@@ -25,6 +25,8 @@ export default function Header({
   triggerUpload,
   lastUpdated,
   actualsThrough,
+  customRange,
+  onCustomRange,
 }) {
   const headerRef = useRef(null);
   const s = STATUS[status] || STATUS.ontrack;
@@ -83,10 +85,9 @@ export default function Header({
             <button
               key={p.key}
               type="button"
-              disabled={!hasData || p.phase5}
-              title={p.phase5 ? 'Coming in a future update' : undefined}
-              className={`cos-period-tab ${period === p.key ? 'is-active' : ''} ${p.phase5 ? 'is-phase5' : ''}`}
-              onClick={() => !p.phase5 && onPeriod(p.key)}
+              disabled={!hasData}
+              className={`cos-period-tab ${period === p.key ? 'is-active' : ''}`}
+              onClick={() => onPeriod(p.key)}
             >
               {p.label}
             </button>
@@ -100,6 +101,27 @@ export default function Header({
             : 'No data loaded'}
         </span>
       </div>
+
+      {period === 'custom' && hasData && (
+        <div className="cos-custom-range-row">
+          <label className="cos-label" htmlFor="cos-range-start">From</label>
+          <input
+            id="cos-range-start"
+            type="date"
+            className="cos-date-input"
+            value={customRange?.start ?? ''}
+            onChange={(e) => onCustomRange?.({ ...customRange, start: e.target.value })}
+          />
+          <label className="cos-label" htmlFor="cos-range-end">To</label>
+          <input
+            id="cos-range-end"
+            type="date"
+            className="cos-date-input"
+            value={customRange?.end ?? ''}
+            onChange={(e) => onCustomRange?.({ ...customRange, end: e.target.value })}
+          />
+        </div>
+      )}
     </header>
   );
 }

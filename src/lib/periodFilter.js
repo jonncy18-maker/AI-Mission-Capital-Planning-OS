@@ -7,13 +7,13 @@
  * "This Month" and "Rolling 30" are relative to the data, not the clock.
  */
 
-export function filterByPeriod(transactions, period, refDateStr) {
+export function filterByPeriod(transactions, period, refDateStr, customRange) {
   if (!transactions?.length) return transactions ?? [];
-  if (!refDateStr) return transactions;
+  if (!refDateStr && period !== 'custom') return transactions;
 
-  const ref = new Date(refDateStr + 'T00:00:00');
-  const refYear = ref.getFullYear();
-  const refMonth = ref.getMonth(); // 0-indexed
+  const ref = refDateStr ? new Date(refDateStr + 'T00:00:00') : null;
+  const refYear = ref?.getFullYear();
+  const refMonth = ref?.getMonth(); // 0-indexed
 
   switch (period) {
     case 'month':
@@ -42,6 +42,15 @@ export function filterByPeriod(transactions, period, refDateStr) {
         const d = new Date(tx.date + 'T00:00:00');
         return d.getFullYear() === refYear - 1;
       });
+
+    case 'custom': {
+      const { start, end } = customRange || {};
+      return transactions.filter((tx) => {
+        if (start && tx.date < start) return false;
+        if (end && tx.date > end) return false;
+        return true;
+      });
+    }
 
     default:
       return transactions;
