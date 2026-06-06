@@ -24,8 +24,6 @@ const FOOTER_SECTIONS = {
 };
 const STORAGE_KEY = 'cos_session_v1';
 
-const UNFILTERED_PERIODS = new Set(['custom', 'forecast']);
-
 function saveSession(parsed, briefing, actualsThrough, lastUpdated) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ parsed, briefing, actualsThrough, lastUpdated }));
@@ -60,6 +58,64 @@ function formatDate(isoDate) {
   }
 }
 
+/** Project groups to EOY by dividing actuals by the fraction of year elapsed. */
+function buildForecast(parsed) {
+  if (!parsed?.transactions?.length) return null;
+  const txs = parsed.transactions;
+  const aggregated = aggregateTransactions(txs);
+  const { max: maxDate } = aggregated.dateRange;
+  if (!maxDate) return { ...aggregated, filteredTransactions: txs, mode: 'forecast' };
+
+  const jan1 = new Date(maxDate.substring(0, 4) + '-01-01T00:00:00');
+  const maxD = new Date(maxDate + 'T00:00:00');
+  const elapsed = Math.max(1, Math.round((maxD - jan1) / 86_400_000) + 1);
+  const fraction = elapsed / 365;
+
+  const projectedGroups = {};
+  for (const [group, data] of Object.entries(aggregated.groups)) {
+    projectedGroups[group] = {
+      total: data.total / fraction,
+      categories: Object.fromEntries(
+        Object.entries(data.categories).map(([cat, amt]) => [cat, amt / fraction])
+      ),
+    };
+  }
+
+  return {
+    ...aggregated,
+    groups: projectedGroups,
+    netflixSplit: {
+      nextgen: aggregated.netflixSplit.nextgen / fraction,
+      family: aggregated.netflixSplit.family / fraction,
+    },
+    transactions: txs,
+    filteredTransactions: txs,
+    excluded: parsed.excluded,
+    mode: 'forecast',
+    fraction,
+  };
+}
+
+/** Apply scenario delta adjustments to a data snapshot's groups. */
+function applyAdjustments(data, adjustments) {
+  if (!data || !Object.keys(adjustments).length) return data;
+  const groups = { ...data.groups };
+  for (const [key, delta] of Object.entries(adjustments)) {
+    const slash = key.indexOf('/');
+    const group = key.substring(0, slash);
+    const catName = key.substring(slash + 1);
+    if (!groups[group]) continue;
+    groups[group] = {
+      total: groups[group].total + delta,
+      categories: {
+        ...groups[group].categories,
+        [catName]: (groups[group].categories[catName] ?? 0) + delta,
+      },
+    };
+  }
+  return { ...data, groups };
+}
+
 export default function App() {
   const [dark, setDark] = useState(false);
   const [period, setPeriod] = useState('month');
@@ -73,6 +129,8 @@ export default function App() {
   const [activeNav, setActiveNav] = useState('Briefing');
   const [budgetOverrides, setBudgetOverrides] = useState(() => loadOverrides());
   const [history, setHistory] = useState(() => loadHistory());
+  const [customRange, setCustomRange] = useState({ start: '', end: '' });
+  const [scenarioAdjustments, setScenarioAdjustments] = useState({});
 
   const fileInputRef = useRef(null);
   const triggerUpload = () => fileInputRef.current?.click();
@@ -96,7 +154,6 @@ export default function App() {
       const result = parseMonarchCsv(csvText);
       setParsed(result);
 
-      // Persist this month to history (keyed by YYYY-MM of dateRange.max).
       const updatedHistory = upsertMonth(result);
       setHistory(updatedHistory);
 
@@ -152,42 +209,59 @@ export default function App() {
   // Filtered view: re-aggregate transactions for the active period.
   const filteredData = useMemo(() => {
     if (!parsed) return null;
-    if (!parsed.transactions || UNFILTERED_PERIODS.has(period)) {
+
+    if (period === 'forecast') {
+      return buildForecast(parsed);
+    }
+
+    if (!parsed.transactions) {
       return { ...parsed, filteredTransactions: parsed.transactions ?? [] };
     }
-    const txs = filterByPeriod(parsed.transactions, period, parsed.dateRange?.max);
+
+    const txs = filterByPeriod(
+      parsed.transactions,
+      period,
+      parsed.dateRange?.max,
+      customRange,
+    );
     return {
       ...aggregateTransactions(txs),
-      transactions: parsed.transactions,        // full set — kept for session storage
-      filteredTransactions: txs,                // period slice — used by drill-down
+      transactions: parsed.transactions,
+      filteredTransactions: txs,
       excluded: parsed.excluded,
     };
-  }, [parsed, period]);
+  }, [parsed, period, customRange]);
+
+  // Scenario adjustments layered on top of the filtered view.
+  const adjustedData = useMemo(
+    () => applyAdjustments(filteredData, scenarioAdjustments),
+    [filteredData, scenarioAdjustments],
+  );
 
   const summary = useMemo(() => {
-    if (!filteredData) return null;
-    const groups = filteredData.groups;
+    if (!adjustedData) return null;
+    const groups = adjustedData.groups;
     const actual = Object.values(groups).reduce((s, g) => s + g.total, 0);
     const budget = GROUP_ORDER.reduce((s, g) => s + (GROUP_BUDGETS[g] || 0), 0);
     return {
       actual,
       budget,
-      transactionCount: filteredData.transactionCount,
+      transactionCount: adjustedData.transactionCount,
       groupCount: Object.keys(groups).length,
     };
-  }, [filteredData]);
+  }, [adjustedData]);
 
   const missionSpent = useMemo(() => {
-    if (!filteredData) return null;
+    if (!adjustedData) return null;
     const educationActual =
-      (filteredData.groups['Education']?.total || 0) +
-      (filteredData.groups['Gifts & Donations']?.categories?.['Philippine Transfers'] || 0);
+      (adjustedData.groups['Education']?.total || 0) +
+      (adjustedData.groups['Gifts & Donations']?.categories?.['Philippine Transfers'] || 0);
     return {
       education: educationActual,
-      family: filteredData.netflixSplit.family,
-      nextgen: filteredData.netflixSplit.nextgen,
+      family: adjustedData.netflixSplit.family,
+      nextgen: adjustedData.netflixSplit.nextgen,
     };
-  }, [filteredData]);
+  }, [adjustedData]);
 
   const status = useMemo(() => {
     if (!summary) return 'ontrack';
@@ -206,6 +280,22 @@ export default function App() {
   function handleBudgetReset() {
     setBudgetOverrides({});
     resetOverrides();
+  }
+
+  function handleScenarioAdd(key, delta) {
+    setScenarioAdjustments((prev) => ({ ...prev, [key]: (prev[key] ?? 0) + delta }));
+  }
+
+  function handleScenarioRemove(key) {
+    setScenarioAdjustments((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  }
+
+  function handleScenarioClear() {
+    setScenarioAdjustments({});
   }
 
   function handleFooterNav(item) {
@@ -239,6 +329,8 @@ export default function App() {
           triggerUpload={triggerUpload}
           lastUpdated={lastUpdated}
           actualsThrough={actualsThrough}
+          customRange={customRange}
+          onCustomRange={setCustomRange}
         />
 
         <main className="cos-main">
@@ -253,12 +345,13 @@ export default function App() {
             />
             {hasData && (
               <CategorySnapshot
-                snapshot={filteredData.groups}
-                transactions={filteredData.filteredTransactions}
+                snapshot={adjustedData.groups}
+                transactions={adjustedData.filteredTransactions}
                 budgetOverrides={budgetOverrides}
                 onBudgetChange={handleBudgetChange}
                 onBudgetReset={handleBudgetReset}
-                dateRange={filteredData.dateRange}
+                dateRange={adjustedData.dateRange}
+                mode={adjustedData.mode}
               />
             )}
             {hasData && <TrendSection history={history} />}
@@ -268,6 +361,10 @@ export default function App() {
             hasData={hasData}
             summary={summary}
             missionSpent={missionSpent}
+            scenarioAdjustments={scenarioAdjustments}
+            onScenarioAdd={handleScenarioAdd}
+            onScenarioRemove={handleScenarioRemove}
+            onScenarioClear={handleScenarioClear}
           />
         </main>
 
