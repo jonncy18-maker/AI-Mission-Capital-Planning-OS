@@ -139,6 +139,7 @@
 .cos-period-tab:hover:not(:disabled) { color: var(--text-secondary); }
 .cos-period-tab.is-active { color: var(--text-primary); border-bottom-color: var(--accent); }
 .cos-period-tabs.is-disabled { opacity: 0.4; pointer-events: none; }
+.cos-period-tab.is-phase5 { opacity: 0.4; cursor: not-allowed; }
 .cos-updated { white-space: nowrap; }
 
 /* ── MAIN GRID ──────────────────────────────────────────────── */
@@ -332,8 +333,8 @@
 /* ── SIDEBAR ────────────────────────────────────────────────── */
 .cos-sidebar {
   position: sticky;
-  top: 116px;
-  max-height: calc(100vh - 148px);
+  top: var(--header-h, 116px);
+  max-height: calc(100vh - var(--header-h, 116px) - 32px);
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--rule-strong) transparent;

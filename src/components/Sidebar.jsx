@@ -33,7 +33,7 @@ function MissionBar({ item, spent }) {
 
 export default function Sidebar({ hasData, summary, missionSpent }) {
   return (
-    <aside className={`cos-sidebar ${hasData ? '' : 'is-placeholder'}`}>
+    <aside id="section-mission" className={`cos-sidebar ${hasData ? '' : 'is-placeholder'}`}>
       <section className="cos-side-block">
         <span className="cos-eyebrow">Period Summary</span>
         <div className="cos-sum-list">
