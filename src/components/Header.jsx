@@ -1,12 +1,12 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 const PERIODS = [
   { key: 'month',     label: 'This Month' },
   { key: 'rolling30', label: 'Rolling 30' },
   { key: 'ytd',       label: 'YTD' },
   { key: 'lastYear',  label: 'Last Year' },
-  { key: 'custom',    label: 'Custom' },
-  { key: 'forecast',  label: 'Forecast · EOY' },
+  { key: 'custom',    label: 'Custom',       phase5: true },
+  { key: 'forecast',  label: 'Forecast · EOY', phase5: true },
 ];
 
 const STATUS = {
@@ -22,15 +22,27 @@ export default function Header({
   status,
   dark,
   onToggleTheme,
-  onUpload,
+  triggerUpload,
   lastUpdated,
   actualsThrough,
 }) {
-  const fileRef = useRef(null);
+  const headerRef = useRef(null);
   const s = STATUS[status] || STATUS.ontrack;
 
+  // Keep --header-h in sync with actual header height for sidebar sticky offset.
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const update = () =>
+      document.documentElement.style.setProperty('--header-h', el.offsetHeight + 'px');
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   return (
-    <header className="cos-header">
+    <header id="cos-header" ref={headerRef} className="cos-header">
       <div className="cos-header-row">
         <div className="cos-wordmark">
           <span className="cos-wordmark-mark">CP</span>
@@ -58,21 +70,10 @@ export default function Header({
           <button
             type="button"
             className="cos-upload-btn"
-            onClick={() => fileRef.current && fileRef.current.click()}
+            onClick={triggerUpload}
           >
             {hasData ? 'Replace CSV' : 'Upload CSV'}
           </button>
-          <input
-            ref={fileRef}
-            type="file"
-            accept=".csv,text/csv"
-            hidden
-            onChange={(e) => {
-              const f = e.target.files && e.target.files[0];
-              if (f) onUpload(f);
-              e.target.value = '';
-            }}
-          />
         </div>
       </div>
 
@@ -82,9 +83,10 @@ export default function Header({
             <button
               key={p.key}
               type="button"
-              disabled={!hasData}
-              className={`cos-period-tab ${period === p.key ? 'is-active' : ''}`}
-              onClick={() => onPeriod(p.key)}
+              disabled={!hasData || p.phase5}
+              title={p.phase5 ? 'Coming in a future update' : undefined}
+              className={`cos-period-tab ${period === p.key ? 'is-active' : ''} ${p.phase5 ? 'is-phase5' : ''}`}
+              onClick={() => !p.phase5 && onPeriod(p.key)}
             >
               {p.label}
             </button>

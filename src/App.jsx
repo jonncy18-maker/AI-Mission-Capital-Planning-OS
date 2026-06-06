@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import './tokens.css';
 import './app.css';
 
@@ -8,11 +8,17 @@ import CategorySnapshot from './components/CategorySnapshot.jsx';
 import Sidebar from './components/Sidebar.jsx';
 
 import { parseMonarchCsv } from './lib/csvParser.js';
+import { filterByPeriod, aggregateTransactions } from './lib/periodFilter.js';
 import { generateBriefing } from './lib/anthropic.js';
 import { syncToSheets } from './lib/sheets.js';
 import { GROUP_ORDER, CATEGORIES, GROUP_BUDGETS, MISSION_CAPITAL } from './constants/categories.js';
 
-const FOOTER_NAV = ['Briefing', 'Categories', 'Mission', 'Settings'];
+const FOOTER_SECTIONS = {
+  Briefing:   'section-briefing',
+  Categories: 'section-categories',
+  Mission:    'section-mission',
+  Settings:   'cos-header',
+};
 const STORAGE_KEY = 'cos_session_v1';
 
 function saveSession(parsed, briefing, actualsThrough, lastUpdated) {
@@ -49,6 +55,9 @@ function formatDate(isoDate) {
   }
 }
 
+// Periods that are not yet filterable — kept disabled until Phase 5.
+const UNFILTERED_PERIODS = new Set(['custom', 'forecast']);
+
 export default function App() {
   const [dark, setDark] = useState(false);
   const [period, setPeriod] = useState('month');
@@ -60,6 +69,10 @@ export default function App() {
   const [actualsThrough, setActualsThrough] = useState(() => loadSession()?.actualsThrough ?? null);
   const [isMobile, setIsMobile] = useState(false);
   const [activeNav, setActiveNav] = useState('Briefing');
+
+  // Lifted file input ref — shared between Header button and BriefingCard empty state.
+  const fileInputRef = useRef(null);
+  const triggerUpload = () => fileInputRef.current?.click();
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 960px)');
@@ -80,25 +93,21 @@ export default function App() {
       const result = parseMonarchCsv(csvText);
       setParsed(result);
 
-      // Actuals-through date from the last transaction in the CSV
       if (result.dateRange?.max) {
         const through = formatDate(result.dateRange.max);
         setActualsThrough(through);
       }
 
-      setLastUpdated(
-        new Date().toLocaleString('en-US', {
-          month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
-        })
-      );
+      const ts = new Date().toLocaleString('en-US', {
+        month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+      });
+      setLastUpdated(ts);
 
-      // Sync raw CSV rows to Google Sheets (non-blocking, silent fail)
       const webhookUrl = import.meta.env.VITE_SHEETS_WEBHOOK_URL;
       if (webhookUrl) {
         syncToSheets(csvText, webhookUrl).catch(() => {});
       }
 
-      // Build the snapshot payload the briefing call needs.
       const snapshot = GROUP_ORDER.map((g) => {
         const groupData = result.groups[g] || { total: 0, categories: {} };
         return {
@@ -119,10 +128,6 @@ export default function App() {
         budget: GROUP_ORDER.reduce((s, g) => s + (GROUP_BUDGETS[g] || 0), 0),
       };
 
-      const ts = new Date().toLocaleString('en-US', {
-        month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
-      });
-
       try {
         const text = await generateBriefing({ period, snapshot, totals });
         setBriefing(text);
@@ -130,7 +135,6 @@ export default function App() {
       } catch (briefErr) {
         setBriefing('');
         setError(briefErr.message);
-        // Still persist parsed data even if briefing generation failed
         saveSession(result, '', result.dateRange?.max ? formatDate(result.dateRange.max) : null, ts);
       }
     } catch (err) {
@@ -141,31 +145,45 @@ export default function App() {
     }
   }
 
-  const summary = useMemo(() => {
+  // Filtered view: re-aggregate transactions for the active period.
+  // Falls back to full parsed data if transactions aren't available (legacy session)
+  // or if the period is a Phase 5 placeholder.
+  const filteredData = useMemo(() => {
     if (!parsed) return null;
-    const groups = parsed.groups;
+    if (!parsed.transactions || UNFILTERED_PERIODS.has(period)) return parsed;
+
+    const txs = filterByPeriod(parsed.transactions, period, parsed.dateRange?.max);
+    return {
+      ...aggregateTransactions(txs),
+      transactions: parsed.transactions,
+      excluded: parsed.excluded,
+    };
+  }, [parsed, period]);
+
+  const summary = useMemo(() => {
+    if (!filteredData) return null;
+    const groups = filteredData.groups;
     const actual = Object.values(groups).reduce((s, g) => s + g.total, 0);
     const budget = GROUP_ORDER.reduce((s, g) => s + (GROUP_BUDGETS[g] || 0), 0);
     return {
       actual,
       budget,
-      transactionCount: parsed.transactionCount,
+      transactionCount: filteredData.transactionCount,
       groupCount: Object.keys(groups).length,
     };
-  }, [parsed]);
+  }, [filteredData]);
 
-  // Derive Mission Capital spent from parsed data.
   const missionSpent = useMemo(() => {
-    if (!parsed) return null;
+    if (!filteredData) return null;
     const educationActual =
-      (parsed.groups['Education']?.total || 0) +
-      (parsed.groups['Gifts & Donations']?.categories?.['Philippine Transfers'] || 0);
+      (filteredData.groups['Education']?.total || 0) +
+      (filteredData.groups['Gifts & Donations']?.categories?.['Philippine Transfers'] || 0);
     return {
       education: educationActual,
-      family: parsed.netflixSplit.family,
-      nextgen: parsed.netflixSplit.nextgen,
+      family: filteredData.netflixSplit.family,
+      nextgen: filteredData.netflixSplit.nextgen,
     };
-  }, [parsed]);
+  }, [filteredData]);
 
   const status = useMemo(() => {
     if (!summary) return 'ontrack';
@@ -175,8 +193,27 @@ export default function App() {
     return 'ontrack';
   }, [summary]);
 
+  function handleFooterNav(item) {
+    setActiveNav(item);
+    const id = FOOTER_SECTIONS[item];
+    if (id) document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   return (
     <div id="cosRoot" className={dark ? 'dark' : ''}>
+      {/* Lifted file input — shared trigger for Header and BriefingCard */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".csv,text/csv"
+        hidden
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) handleUpload(f);
+          e.target.value = '';
+        }}
+      />
+
       <div className={`cos-shell ${isMobile ? 'is-mobile' : ''}`}>
         <Header
           hasData={hasData}
@@ -185,7 +222,7 @@ export default function App() {
           status={status}
           dark={dark}
           onToggleTheme={() => setDark((d) => !d)}
-          onUpload={handleUpload}
+          triggerUpload={triggerUpload}
           lastUpdated={lastUpdated}
           actualsThrough={actualsThrough}
         />
@@ -198,9 +235,9 @@ export default function App() {
               error={error}
               briefing={briefing}
               period={period}
-              onUpload={() => document.querySelector('input[type=file]')?.click()}
+              onUpload={triggerUpload}
             />
-            {hasData && <CategorySnapshot snapshot={parsed.groups} />}
+            {hasData && <CategorySnapshot snapshot={filteredData.groups} />}
           </div>
 
           <Sidebar
@@ -212,12 +249,12 @@ export default function App() {
 
         <footer className="cos-footer">
           <nav className="cos-footer-nav">
-            {FOOTER_NAV.map((item) => (
+            {Object.keys(FOOTER_SECTIONS).map((item) => (
               <button
                 key={item}
                 type="button"
                 className={`cos-footer-link ${activeNav === item ? 'is-active' : ''}`}
-                onClick={() => setActiveNav(item)}
+                onClick={() => handleFooterNav(item)}
               >
                 {item}
               </button>

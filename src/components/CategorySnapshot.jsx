@@ -28,7 +28,7 @@ export default function CategorySnapshot({ snapshot }) {
     setCollapsed(Object.fromEntries(GROUP_ORDER.map((g) => [g, !allCollapsed])));
 
   return (
-    <section className="cos-snapshot">
+    <section id="section-categories" className="cos-snapshot">
       <div className="cos-snapshot-header">
         <span className="cos-eyebrow">Category Snapshot</span>
         <div className="cos-snap-header-right">

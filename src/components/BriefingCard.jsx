@@ -1,13 +1,13 @@
 import { tokenizeBriefing } from '../lib/anthropic.js';
 
-const PERIODS = [
-  { key: 'month',     label: 'This Month' },
-  { key: 'rolling30', label: 'Rolling 30' },
-  { key: 'ytd',       label: 'YTD' },
-  { key: 'lastYear',  label: 'Last Year' },
-  { key: 'custom',    label: 'Custom' },
-  { key: 'forecast',  label: 'Forecast · EOY' },
-];
+const PERIOD_META = {
+  month:     { label: 'This Month',      headline: 'The month' },
+  rolling30: { label: 'Rolling 30',      headline: 'Rolling 30 days' },
+  ytd:       { label: 'YTD',             headline: 'Year to date' },
+  lastYear:  { label: 'Last Year',       headline: 'Last year' },
+  custom:    { label: 'Custom',          headline: 'Custom period' },
+  forecast:  { label: 'Forecast · EOY',  headline: 'EOY forecast' },
+};
 
 const FLAG_TEXT = { over: 'OVER', watch: 'WATCH', ok: 'OK' };
 const FLAG_CLS  = { over: 'is-alert', watch: 'is-warn', ok: 'is-ok' };
@@ -43,24 +43,26 @@ function EmptyState({ onUpload }) {
 export default function BriefingCard({ hasData, loading, error, briefing, period, onUpload }) {
   if (!hasData) {
     return (
-      <section className="cos-card cos-briefing">
+      <section id="section-briefing" className="cos-card cos-briefing">
         <EmptyState onUpload={onUpload} />
       </section>
     );
   }
 
-  const periodLabel = (PERIODS.find((p) => p.key === period) || { label: 'This Month' }).label;
+  const meta = PERIOD_META[period] || PERIOD_META.month;
+  const periodLabel = meta.label;
+  const headline = meta.headline;
   const tokens = briefing ? tokenizeBriefing(briefing) : [];
 
   return (
-    <section className="cos-card cos-briefing">
+    <section id="section-briefing" className="cos-card cos-briefing">
       <div className="cos-card-head">
         <span className="cos-eyebrow">Executive Briefing</span>
         <span className="cos-label">{periodLabel}</span>
       </div>
 
       <h2 className="cos-hero cos-briefing-title">
-        The month, in&nbsp;<em className="cos-italic">brief.</em>
+        {headline},&nbsp;in&nbsp;<em className="cos-italic">brief.</em>
       </h2>
 
       {loading && <p className="cos-body cos-briefing-status">Drafting the briefing…</p>}

@@ -165,7 +165,7 @@ export function parseMonarchCsv(text) {
 
   const groups = {};
   const netflixSplit = { nextgen: 0, family: 0 };
-  let transactionCount = 0;
+  const transactions = [];
   let min = null;
   let max = null;
 
@@ -191,22 +191,25 @@ export function parseMonarchCsv(text) {
     groups[group].total += amount;
     groups[group].categories[category] =
       (groups[group].categories[category] || 0) + amount;
-    transactionCount++;
 
     // Rule 2 — Netflix split on TV Streaming Services (feeds Mission Capital).
-    if (
-      category === 'TV Streaming Services' &&
-      /netflix/i.test(merchant)
-    ) {
-      if (amount >= NETFLIX_SPLIT_THRESHOLD) netflixSplit.nextgen += amount;
+    const isNetflix =
+      category === 'TV Streaming Services' && /netflix/i.test(merchant);
+    const isNetflixNextgen = isNetflix && amount >= NETFLIX_SPLIT_THRESHOLD;
+
+    if (isNetflix) {
+      if (isNetflixNextgen) netflixSplit.nextgen += amount;
       else netflixSplit.family += amount;
     }
+
+    transactions.push({ date, merchant, group, category, amount, isNetflix, isNetflixNextgen });
   }
 
   return {
     groups,
     netflixSplit,
-    transactionCount,
+    transactions,
+    transactionCount: transactions.length,
     dateRange: { min, max },
     excluded: EXCLUDED_GROUPS.slice(),
   };
