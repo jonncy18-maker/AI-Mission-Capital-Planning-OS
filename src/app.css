@@ -98,14 +98,14 @@
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
   padding: 9px 16px;
-  background: var(--text-primary);
-  color: var(--bg-primary);
-  border: 1px solid var(--text-primary);
+  background: var(--accent);
+  color: var(--accent-ink);
+  border: 1px solid var(--accent);
   border-radius: var(--r-sm);
   cursor: pointer;
   transition: all var(--transition);
 }
-.cos-upload-btn:hover { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.cos-upload-btn:hover { opacity: 0.88; }
 .cos-upload-btn--lg { padding: 13px 26px; font-size: var(--fs-body-sm); }
 
 /* Period selector */
@@ -166,6 +166,7 @@
   border: 1px solid var(--rule);
   border-radius: var(--r-lg);
   padding: var(--space-8);
+  box-shadow: var(--shadow-card);
   transition: background var(--transition), border-color var(--transition);
 }
 .cos-card-head {
@@ -343,7 +344,9 @@
   flex-direction: column;
   gap: var(--space-6);
   padding-left: var(--space-6);
-  border-left: 2px solid var(--accent);
+  border-left: 3px solid var(--accent);
+  background: var(--accent-wash);
+  border-radius: 0 var(--r-lg) var(--r-lg) 0;
 }
 .cos-shell.is-mobile .cos-sidebar { position: static; border-left: none; padding-left: 0; }
 .cos-sidebar.is-placeholder { opacity: 0.55; }

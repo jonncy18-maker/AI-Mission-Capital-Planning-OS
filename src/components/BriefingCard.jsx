@@ -23,7 +23,12 @@ function Flag({ level }) {
 function EmptyState({ onUpload }) {
   return (
     <div className="cos-empty">
-      <div className="cos-empty-mark">↥</div>
+      <div className="cos-empty-mark">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M12 15V3m0 0L8 7m4-4 4 4"/>
+          <path d="M2 17v1a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-1"/>
+        </svg>
+      </div>
       <span className="cos-eyebrow">Awaiting data</span>
       <h2 className="cos-hero cos-empty-title">
         Upload a Monarch export to open the&nbsp;<em className="cos-italic">books.</em>
